@@ -20,29 +20,30 @@ model = ChatOpenAI(model="gpt-4o-mini")
 parser = StrOutputParser()
 
 # %%
-# trimmer = trim_messages(
-#     max_tokens=65,
-#     strategy="last",
-#     token_counter=model,
-#     include_system=True,
-#     allow_partial=False,
-#     start_on="human",
-# )
+trimmer = trim_messages(
+    max_tokens=65,
+    strategy="last",
+    token_counter=model,
+    include_system=True,
+    allow_partial=False,
+    start_on="human",
+)
 
-# messages = [
-#     SystemMessage(content="you're a good assistant"),
-#     HumanMessage(content="hi! I'm bob"),
-#     AIMessage(content="hi!"),
-#     HumanMessage(content="I like vanilla ice cream"),
-#     AIMessage(content="nice"),
-#     HumanMessage(content="whats 2 + 2"),
-#     AIMessage(content="4"),
-#     HumanMessage(content="thanks"),
-#     AIMessage(content="no problem!"),
-#     HumanMessage(content="having fun?"),
-#     AIMessage(content="yes!"),
-# ]
-
+messages = [
+    SystemMessage(content="you're a good assistant"),
+    HumanMessage(content="hi! I'm bob"),
+    AIMessage(content="hi!"),
+    HumanMessage(content="I like vanilla ice cream"),
+    AIMessage(content="nice"),
+    HumanMessage(content="whats 2 + 2"),
+    AIMessage(content="4"),
+    HumanMessage(content="thanks"),
+    AIMessage(content="no problem!"),
+    HumanMessage(content="having fun?"),
+    AIMessage(content="yes!"),
+]
+trimmer.invoke(messages)
+#%%
 
 prompt = ChatPromptTemplate.from_messages(
     [
@@ -65,7 +66,10 @@ workflow = StateGraph(state_schema=State)
 
 def call_model(state: State):
     chain = prompt | model
-    response = chain.invoke(state)
+    trimmed_messages = trimmer.invoke(state["messages"])
+    response = chain.invoke(
+        {"messages": trimmed_messages, "language": state["language"]}
+    )
     return {"messages": [response]}
 
 
@@ -81,7 +85,7 @@ config = {"configurable": {"thread_id": "abc456"}}
 query = "Hi! I'm Bob."
 language = "Spanish"
 
-input_messages = [HumanMessage(query)]
+input_messages = messages + [HumanMessage(query)]
 output = app.invoke(
     {"messages": input_messages, "language": language},
     config,
