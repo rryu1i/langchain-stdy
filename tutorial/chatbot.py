@@ -9,7 +9,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, MessagesState, StateGraph
 from typing import Sequence
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import BaseMessage, trim_messages
 from langgraph.graph.message import add_messages
 from typing_extensions import Annotated, TypedDict
 #%%
@@ -20,6 +20,30 @@ model = ChatOpenAI(model="gpt-4o-mini")
 parser = StrOutputParser()
 
 # %%
+# trimmer = trim_messages(
+#     max_tokens=65,
+#     strategy="last",
+#     token_counter=model,
+#     include_system=True,
+#     allow_partial=False,
+#     start_on="human",
+# )
+
+# messages = [
+#     SystemMessage(content="you're a good assistant"),
+#     HumanMessage(content="hi! I'm bob"),
+#     AIMessage(content="hi!"),
+#     HumanMessage(content="I like vanilla ice cream"),
+#     AIMessage(content="nice"),
+#     HumanMessage(content="whats 2 + 2"),
+#     AIMessage(content="4"),
+#     HumanMessage(content="thanks"),
+#     AIMessage(content="no problem!"),
+#     HumanMessage(content="having fun?"),
+#     AIMessage(content="yes!"),
+# ]
+
+
 prompt = ChatPromptTemplate.from_messages(
     [
         (
